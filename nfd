@@ -1,0 +1,42 @@
+image:
+  repository: registry.k8s.io/nfd/node-feature-discovery
+  tag: v0.18.3
+  pullPolicy: IfNotPresent
+
+master:
+  enable: true
+  extraLabelNs:
+    - node.mycompany.io
+  config:
+    restrictions:
+      allowOverwrite: false
+
+worker:
+  enable: true
+  config:
+    core:
+      sleepInterval: 60s
+      featureSources:
+        - storage
+      labelSources:
+        - default
+      labelWhiteList: '^$'
+    sources:
+      storage: {}
+
+
+
+apiVersion: nfd.k8s-sigs.io/v1alpha1
+kind: NodeFeatureRule
+metadata:
+  name: has-ssd-from-nonrotational-disk
+spec:
+  rules:
+    - name: "set custom has-ssd label from storage non-rotational disk"
+      labels:
+        node.mycompany.io/has-ssd: "true"
+      matchFeatures:
+        - feature: storage
+          matchExpressions:
+            nonrotationaldisk:
+              op: Exists
